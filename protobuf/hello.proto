@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "github.com/adetunjii/streaming-service/pb;grpcservice";
+
+package hello_service;
+
+import "google/protobuf/empty.proto";
+
+message HelloResponse {
+   string response = 1;
+}
+
+service HelloService {
+    rpc GetUserDetails(google.protobuf.Empty) returns (HelloResponse);
+}
