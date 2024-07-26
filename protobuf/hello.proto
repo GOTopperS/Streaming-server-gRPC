@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option go_package = "github.com/adetunjii/streaming-service/pb;grpcservice";
 
-package hello_service;
+package helloservice;
 
 import "google/protobuf/empty.proto";
 

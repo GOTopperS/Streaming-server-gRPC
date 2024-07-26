@@ -36,7 +36,7 @@ func NewHelloServiceClient(cc grpc.ClientConnInterface) HelloServiceClient {
 
 func (c *helloServiceClient) GetUserDetails(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*HelloResponse, error) {
 	out := new(HelloResponse)
-	err := c.cc.Invoke(ctx, "/hello_service.HelloService/GetUserDetails", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/helloservice.HelloService/GetUserDetails", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func _HelloService_GetUserDetails_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/hello_service.HelloService/GetUserDetails",
+		FullMethod: "/helloservice.HelloService/GetUserDetails",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HelloServiceServer).GetUserDetails(ctx, req.(*emptypb.Empty))
@@ -93,7 +93,7 @@ func _HelloService_GetUserDetails_Handler(srv interface{}, ctx context.Context, 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var HelloService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "hello_service.HelloService",
+	ServiceName: "helloservice.HelloService",
 	HandlerType: (*HelloServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

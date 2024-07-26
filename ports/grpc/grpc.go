@@ -6,52 +6,55 @@ import (
 	"io"
 	"net"
 
+	"github.com/adetunjii/streaming-server/internal/service"
 	grpcservice "github.com/adetunjii/streaming-server/pb"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
 type GrpcServer struct {
-	grpcservice.UnimplementedHelloServiceServer
-	grpcServer *grpc.Server
-	listener net.Listener
+	grpcservice.UnimplementedVideoServiceServer
+	grpcServer   *grpc.Server
+	listener     net.Listener
+	videoService *service.VideoService
 }
 
-func (s *GrpcServer) Close() error {
+func (s GrpcServer) Close() error {
 	s.grpcServer.GracefulStop()
 	return nil
 }
 
-func StartGrpcServer(ctx context.Context, addr string) (io.Closer, error) {
-	
-	if addr == "" {
-		logrus.WithContext(ctx).Warn("GRPC server address not set. Using default value :8000")
-		addr = ":8000"
-	}
+func StartGrpcServer(ctx context.Context, listener net.Listener, vs *service.VideoService) {
 
-	listener, err := net.Listen("tcp", addr)
-	if err != nil {
-		return nil, err
-	}
-
-	srv := GrpcServer {
-		listener: listener,
+	srv := GrpcServer{
+		listener:     listener,
+		videoService: vs,
 	}
 
 	srv.grpcServer = grpc.NewServer()
-	grpcservice.RegisterHelloServiceServer(srv.grpcServer, &srv)
-	
-	go func() {
-		logrus.WithContext(ctx).Info(fmt.Sprintf("GRPC server is listening on: %s", addr))
+	grpcservice.RegisterVideoServiceServer(srv.grpcServer, &srv)
 
-		if err = srv.grpcServer.Serve(srv.listener); err != nil {
-			logrus.WithContext(ctx).Fatal(fmt.Sprintf("Cannot start grpc server: %s", err))
-		}
-	}()
+	logrus.WithContext(ctx).Info("Grpc Server started successfully...")
+	if err := srv.grpcServer.Serve(srv.listener); err != nil {
+		logrus.WithContext(ctx).Fatal(fmt.Sprintf("Cannot start grpc server: %s", err))
+	}
 
-	return &srv, nil
+}
+
+func (g *GrpcServer) GetVideoStream(req *grpcservice.VideoRequest, srv grpcservice.VideoService_GetVideoStreamServer) error {
+	ctx := context.TODO()
+
+	logrus.WithContext(ctx).Infof("Request received with %s", req.Id)
+
+	err := g.videoService.StreamVideo(ctx, "gotsstreamingserver", req.Id, srv)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 var (
-	_ io.Closer = (*GrpcServer)(nil)
+	_ io.Closer                      = (*GrpcServer)(nil)
+	_ grpcservice.VideoServiceServer = (*GrpcServer)(nil)
 )
